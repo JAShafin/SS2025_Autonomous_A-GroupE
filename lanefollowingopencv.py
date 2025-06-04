@@ -6,7 +6,7 @@ from skimage.feature import hog
 # 配置
 DATA_DIR   = r"H:\lanefollowing\dataset"               # 根目录，里面有 straight/、left/、right/
 IMAGE_SIZE = (128, 128)
-LABEL_MAP  = {"straight": 0, "left": 1, "right": 2}
+LABEL_MAP  = {"straight": 0, "left": -1, "right": 1}
 
 all_features = []
 all_labels   = []
@@ -39,7 +39,7 @@ for class_name, class_idx in LABEL_MAP.items():
 X = np.array(all_features)  # (N, D)
 y = np.array(all_labels)    # (N,)
 
-np.save("X_features.npy", X)
-np.save("y_labels.npy", y)
+np.save("X_features1.npy", X)
+np.save("y_labels1.npy", y)
 
 print(f"一共处理了 {X.shape[0]} 张图片，特征维度 = {X.shape[1]}")
