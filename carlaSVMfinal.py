@@ -5,6 +5,9 @@ CARLA template: constant forward speed + steering from student model.
 Students: put your own logic inside predict_steering(img).
 The function must return a value between -1 and 1.
 
+
+please install this :   pip install opencv-python-headless scikit-image
+
 Dependencies
 ------------
 Only CARLA is required.  If your model needs numpy, torch, etc.,
