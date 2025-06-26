@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>// Broadcast channels (allow 1 sender, many receivers)
+broadcast chan car_detected;
+broadcast chan brake_emergency;
+broadcast chan slow_down1;
+broadcast chan slow_down2;
+broadcast chan create_space;
+broadcast chan done_sync;
+broadcast chan reset_all;
+
+broadcast chan safe_done;
+
+broadcast chan start_join;
+
+chan joinRequest, joinApproval;
+chan adjustGap, gapReady;
+chan positionAligned;
+chan joinoutoftime;
+broadcast chan notifyall;
+broadcast chan reset;
+
+
+
+// Binary channels (strict 1-to-1 communication)
+chan unsafe_done;
+
+
+// Global clock
+clock t;
+
+clock t_join, t_gap;
+
+
+</declaration>
+	<template>
+		<name x="5" y="5">RadarSensor</name>
+		<declaration>clock t;
+</declaration>
+		<location id="id0" x="-127" y="-42">
+			<name x="-178" y="-51">Idle</name>
+		</location>
+		<location id="id1" x="25" y="-42">
+			<name x="25" y="-127">Detected</name>
+		</location>
+		<init ref="id0"/>
+		<transition id="id2">
+			<source ref="id1"/>
+			<target ref="id1"/>
+			<label kind="guard" x="42" y="-144">t &gt; 5</label>
+			<label kind="synchronisation" x="43" y="-59">car_detected!</label>
+			<nail x="119" y="-42"/>
+			<nail x="119" y="-102"/>
+			<nail x="17" y="-102"/>
+		</transition>
+		<transition id="id3">
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-109" y="25">unsafe_done?</label>
+			<nail x="25" y="42"/>
+			<nail x="-127" y="42"/>
+		</transition>
+		<transition id="id4">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="guard" x="-93" y="-85">t &gt; 5</label>
+			<label kind="synchronisation" x="-109" y="-59">car_detected!</label>
+			<label kind="assignment" x="-109" y="-42">t := 0</label>
+		</transition>
+	</template>
+	<template>
+		<name>OperationCenter</name>
+		<declaration>clock t;
+</declaration>
+		<location id="id5" x="-323" y="-110">
+			<name x="-333" y="-144">Waiting</name>
+			<label kind="invariant" x="-333" y="-93">t &lt;= 10</label>
+		</location>
+		<location id="id6" x="-136" y="-110">
+			<name x="-146" y="-144">Assessing</name>
+		</location>
+		<location id="id7" x="68" y="-59">
+			<name x="58" y="-93">Unsafe</name>
+		</location>
+		<location id="id8" x="51" y="-187">
+			<name x="41" y="-221">SlowDownOtherTruck2</name>
+		</location>
+		<location id="id9" x="289" y="-17">
+			<name x="272" y="-8">Done</name>
+		</location>
+		<location id="id10" x="280" y="-187">
+			<name x="270" y="-221">SlowDownOtherTruck1</name>
+		</location>
+		<location id="id11" x="493" y="-187">
+			<name x="519" y="-204">CreateSpace</name>
+		</location>
+		<location id="id12" x="-178" y="17">
+			<name x="-212" y="-25">Reset</name>
+		</location>
+		<location id="id13" x="-323" y="34">
+			<name x="-333" y="0">TriggerJoin</name>
+		</location>
+		<init ref="id5"/>
+		<transition id="id14">
+			<source ref="id12"/>
+			<target ref="id13"/>
+			<label kind="synchronisation" x="-289" y="25">start_join!</label>
+		</transition>
+		<transition id="id15">
+			<source ref="id9"/>
+			<target ref="id12"/>
+			<label kind="guard" x="-119" y="17">t &gt; 5</label>
+			<label kind="synchronisation" x="-127" y="-17">reset_all!</label>
+			<label kind="assignment" x="-119" y="34">t := 0</label>
+		</transition>
+		<transition id="id16">
+			<source ref="id11"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="307" y="-119">safe_done!</label>
+		</transition>
+		<transition id="id17">
+			<source ref="id10"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="298" y="-204">create_space!</label>
+		</transition>
+		<transition id="id18">
+			<source ref="id6"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-118" y="-165">slow_down2!</label>
+		</transition>
+		<transition id="id19">
+			<source ref="id8"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="69" y="-204">slow_down1!</label>
+		</transition>
+		<transition id="id20">
+			<source ref="id7"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="93" y="-76">unsafe_done!</label>
+		</transition>
+		<transition id="id21">
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-127" y="-68">brake_emergency!</label>
+		</transition>
+		<transition id="id22">
+			<source ref="id5"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-305" y="-127">car_detected?</label>
+			<label kind="assignment" x="-305" y="-110">t := 0</label>
+		</transition>
+	</template>
+	<template>
+		<name>DetectorTruck</name>
+		<declaration>clock t;
+</declaration>
+		<location id="id23" x="-323" y="-76">
+			<name x="-333" y="-110">Driving</name>
+		</location>
+		<location id="id24" x="-144" y="-170">
+			<name x="-154" y="-204">CreateSpace</name>
+		</location>
+		<location id="id25" x="-136" y="17">
+			<name x="-146" y="-17">BrakeEmergency</name>
+		</location>
+		<location id="id26" x="85" y="-93">
+			<name x="75" y="-127">Done</name>
+		</location>
+		<init ref="id23"/>
+		<transition id="id27">
+			<source ref="id26"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-305" y="85">reset_all!</label>
+			<label kind="assignment" x="-305" y="102">t := 0</label>
+			<nail x="85" y="102"/>
+			<nail x="-323" y="102"/>
+		</transition>
+		<transition id="id28">
+			<source ref="id25"/>
+			<target ref="id26"/>
+		</transition>
+		<transition id="id29">
+			<source ref="id24"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-126" y="-148">safe_done?</label>
+		</transition>
+		<transition id="id30">
+			<source ref="id23"/>
+			<target ref="id25"/>
+			<label kind="synchronisation" x="-305" y="-42">brake_emergency?</label>
+		</transition>
+		<transition id="id31">
+			<source ref="id23"/>
+			<target ref="id24"/>
+			<label kind="synchronisation" x="-305" y="-140">create_space?</label>
+		</transition>
+	</template>
+	<template>
+		<name>OtherTruck1</name>
+		<parameter> </parameter>
+		<declaration>clock t;
+</declaration>
+		<location id="id32" x="-331" y="-17">
+			<name x="-341" y="-51">Driving</name>
+		</location>
+		<location id="id33" x="-119" y="-76">
+			<name x="-129" y="-110">SlowDown</name>
+		</location>
+		<location id="id34" x="-119" y="17">
+			<name x="-129" y="-17">BrakeEmergency</name>
+		</location>
+		<location id="id35" x="68" y="-51">
+			<name x="58" y="-85">Done</name>
+		</location>
+		<init ref="id32"/>
+		<transition id="id36">
+			<source ref="id35"/>
+			<target ref="id32"/>
+			<label kind="synchronisation" x="-313" y="89">reset_all!</label>
+			<label kind="assignment" x="-313" y="106">t := 0</label>
+			<nail x="68" y="102"/>
+			<nail x="-331" y="110"/>
+		</transition>
+		<transition id="id37">
+			<source ref="id34"/>
+			<target ref="id35"/>
+		</transition>
+		<transition id="id38">
+			<source ref="id33"/>
+			<target ref="id35"/>
+			<label kind="synchronisation" x="-101" y="-80">safe_done?</label>
+		</transition>
+		<transition id="id39">
+			<source ref="id32"/>
+			<target ref="id34"/>
+			<label kind="synchronisation" x="-313" y="-17">brake_emergency?</label>
+		</transition>
+		<transition id="id40">
+			<source ref="id32"/>
+			<target ref="id33"/>
+			<label kind="synchronisation" x="-313" y="-63">slow_down1?</label>
+		</transition>
+	</template>
+	<template>
+		<name>OtherTruck2</name>
+		<declaration>clock t;
+</declaration>
+		<location id="id41" x="-119" y="17">
+			<name x="-129" y="-17">BrakeEmergency</name>
+		</location>
+		<location id="id42" x="68" y="-51">
+			<name x="58" y="-85">Done</name>
+		</location>
+		<location id="id43" x="-119" y="-76">
+			<name x="-129" y="-110">SlowDown</name>
+		</location>
+		<location id="id44" x="-331" y="-17">
+			<name x="-341" y="-51">Driving</name>
+		</location>
+		<init ref="id44"/>
+		<transition id="id45">
+			<source ref="id42"/>
+			<target ref="id44"/>
+			<label kind="synchronisation" x="-313" y="97">reset_all!</label>
+			<label kind="assignment" x="-313" y="114">t := 0</label>
+			<nail x="68" y="110"/>
+			<nail x="-331" y="119"/>
+		</transition>
+		<transition id="id46">
+			<source ref="id41"/>
+			<target ref="id42"/>
+		</transition>
+		<transition id="id47">
+			<source ref="id43"/>
+			<target ref="id42"/>
+			<label kind="synchronisation" x="-101" y="-80">safe_done?</label>
+		</transition>
+		<transition id="id48">
+			<source ref="id44"/>
+			<target ref="id41"/>
+			<label kind="synchronisation" x="-313" y="-17">brake_emergency?</label>
+		</transition>
+		<transition id="id49">
+			<source ref="id44"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="-313" y="-63">slow_down2?</label>
+		</transition>
+	</template>
+	<template>
+		<name>JoiningTruck</name>
+		<declaration>clock t_join;</declaration>
+		<location id="id50" x="-136" y="8">
+			<name x="-153" y="-26">Idle</name>
+		</location>
+		<location id="id51" x="150" y="0">
+			<name x="127" y="-42">WaitingApproval</name>
+		</location>
+		<location id="id52" x="300" y="0">
+			<name x="289" y="-42">Aligning</name>
+		</location>
+		<location id="id53" x="450" y="0">
+			<name x="442" y="-34">Joined</name>
+		</location>
+		<location id="id54" x="212" y="110">
+			<name x="204" y="127">safemode</name>
+		</location>
+		<location id="id55" x="-255" y="-76">
+			<name x="-265" y="-110">WaitStart</name>
+		</location>
+		<init ref="id55"/>
+		<transition id="id56">
+			<source ref="id55"/>
+			<target ref="id50"/>
+			<label kind="synchronisation" x="-237" y="-51">start_join?</label>
+		</transition>
+		<transition id="id57">
+			<source ref="id54"/>
+			<target ref="id50"/>
+			<label kind="synchronisation" x="25" y="76">reset?</label>
+		</transition>
+		<transition id="id58">
+			<source ref="id51"/>
+			<target ref="id54"/>
+			<label kind="synchronisation" x="195" y="59">notifyall?</label>
+		</transition>
+		<transition id="id59">
+			<source ref="id50"/>
+			<target ref="id51"/>
+			<label kind="synchronisation" x="25" y="-17">joinRequest!</label>
+			<label kind="assignment" x="42" y="8">t_join := 0</label>
+		</transition>
+		<transition id="id60">
+			<source ref="id51"/>
+			<target ref="id52"/>
+			<label kind="guard" x="187" y="-25">t_join&lt;6</label>
+			<label kind="synchronisation" x="178" y="8">joinApproval?</label>
+		</transition>
+		<transition id="id61">
+			<source ref="id52"/>
+			<target ref="id53"/>
+			<label kind="synchronisation" x="314" y="8">positionAligned!</label>
+		</transition>
+	</template>
+	<template>
+		<name>Leader</name>
+		<declaration>clock t_gap;</declaration>
+		<location id="id62" x="-136" y="104">
+			<name x="-153" y="63">Approvingjoin</name>
+		</location>
+		<location id="id63" x="31" y="102">
+			<name x="-9" y="61">AdjustingGap</name>
+		</location>
+		<location id="id64" x="181" y="102">
+			<name x="170" y="70">Approving</name>
+		</location>
+		<location id="id65" x="331" y="102">
+			<name x="280" y="68">jointruckaligned</name>
+		</location>
+		<location id="id66" x="-280" y="104">
+			<name x="-290" y="70">Idle</name>
+		</location>
+		<location id="id67" x="493" y="102">
+			<name x="483" y="68">joined</name>
+		</location>
+		<location id="id68" x="-8" y="-119">
+			<name x="-18" y="-153">safemode</name>
+		</location>
+		<location id="id69" x="-382" y="17">
+			<name x="-392" y="-17">WaitStart</name>
+		</location>
+		<init ref="id69"/>
+		<transition id="id70">
+			<source ref="id69"/>
+			<target ref="id66"/>
+			<label kind="synchronisation" x="-364" y="43">start_join?</label>
+		</transition>
+		<transition id="id71">
+			<source ref="id63"/>
+			<target ref="id68"/>
+			<label kind="guard" x="-59" y="-59">t_gap&gt;3</label>
+			<label kind="synchronisation" x="17" y="-25">notifyall!</label>
+		</transition>
+		<transition id="id72">
+			<source ref="id68"/>
+			<target ref="id66"/>
+			<label kind="synchronisation" x="-170" y="-51">reset!</label>
+			<nail x="-272" y="93"/>
+		</transition>
+		<transition id="id73">
+			<source ref="id65"/>
+			<target ref="id67"/>
+			<label kind="synchronisation" x="348" y="110">positionAligned?</label>
+		</transition>
+		<transition id="id74">
+			<source ref="id66"/>
+			<target ref="id62"/>
+			<label kind="synchronisation" x="-255" y="78">joinRequest?</label>
+		</transition>
+		<transition id="id75">
+			<source ref="id62"/>
+			<target ref="id63"/>
+			<label kind="synchronisation" x="-85" y="104">adjustGap!</label>
+			<label kind="assignment" x="-85" y="121">t_gap := 0</label>
+		</transition>
+		<transition id="id76">
+			<source ref="id63"/>
+			<target ref="id64"/>
+			<label kind="guard" x="68" y="78">t_gap &lt;= 3</label>
+			<label kind="synchronisation" x="81" y="107">gapReady?</label>
+		</transition>
+		<transition id="id77">
+			<source ref="id64"/>
+			<target ref="id65"/>
+			<label kind="synchronisation" x="212" y="112">joinApproval!</label>
+		</transition>
+	</template>
+	<template>
+		<name>Member</name>
+		<location id="id78" x="0" y="200">
+			<name x="-17" y="161">Idle</name>
+		</location>
+		<location id="id79" x="150" y="200">
+			<name x="119" y="161">GapAdjusting</name>
+		</location>
+		<location id="id80" x="300" y="200">
+			<name x="289" y="170">GapReady</name>
+		</location>
+		<location id="id81" x="357" y="374">
+			<name x="347" y="340">stopGapadjusting</name>
+		</location>
+		<location id="id82" x="-153" y="110">
+			<name x="-163" y="76">WaitStart</name>
+		</location>
+		<init ref="id82"/>
+		<transition id="id83">
+			<source ref="id82"/>
+			<target ref="id78"/>
+			<label kind="synchronisation" x="-135" y="138">start_join?</label>
+		</transition>
+		<transition id="id84">
+			<source ref="id81"/>
+			<target ref="id78"/>
+			<label kind="synchronisation" x="136" y="289">reset?</label>
+		</transition>
+		<transition id="id85">
+			<source ref="id79"/>
+			<target ref="id81"/>
+			<label kind="synchronisation" x="246" y="255">notifyall?</label>
+		</transition>
+		<transition id="id86">
+			<source ref="id78"/>
+			<target ref="id79"/>
+			<label kind="synchronisation" x="34" y="178">adjustGap?</label>
+		</transition>
+		<transition id="id87">
+			<source ref="id79"/>
+			<target ref="id80"/>
+			<label kind="synchronisation" x="195" y="178">gapReady!</label>
+		</transition>
+	</template>
+	<system>// Instances of each template
+radar_sensor = RadarSensor();
+operation_center = OperationCenter();
+detector = DetectorTruck();
+truck1 = OtherTruck1();
+truck2 = OtherTruck2();
+
+// System composition
+system radar_sensor, operation_center, detector, truck1, truck2, JoiningTruck, Leader, Member;
+  </system>
+	<queries>
+		<query>
+			<formula>A[] not deadlock
+</formula>
+			<comment/>
+			<result outcome="success" type="quality" timestamp="2025-06-25 14:56:29 +0200">
+			</result>
+		</query>
+	</queries>
+</nta>
